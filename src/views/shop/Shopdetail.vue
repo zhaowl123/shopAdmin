@@ -14,6 +14,9 @@
         <!-- <el-input v-model.number="formData.num" placeholder="请输入商品数量"></el-input> -->
         <el-input-number v-model.number="formData.num" :min="0" :max="9999"></el-input-number>
       </el-form-item>
+      <el-form-item prop="tags" label="商品标签">
+        <el-tag class="item-tag" v-for="str in formData.tags" type="success" effect="dark" :key="str.index">{{ str }}</el-tag>
+      </el-form-item>
       <el-form-item label="商品图片">
         <el-upload list-type="picture" :drag="true" :limit="1" action="https://www.baidu.com" :on-error="uploadCallback" :before-upload="uploadCheck">
           <template #default>
@@ -75,7 +78,8 @@ export default defineComponent({
             num: 0,
             state: false,
             detail: '',
-            score: 0
+            score: 0,
+            tags: []
          })
 
       const formRule = ref({
@@ -99,6 +103,9 @@ export default defineComponent({
           ],
           score: [
             { required: false }
+          ],
+          tags: [
+            { required: false }
           ]
       })
 
@@ -107,7 +114,15 @@ export default defineComponent({
           id: props.id
         })
         // console.log(res)
-        formData.value = res.data
+        // console.log(Number(res.data.num))
+        formData.value['name'] = res.data.name
+        formData.value['introduct'] = res.data.introduct
+        formData.value['price'] = Number(res.data.price)
+        formData.value['num'] = Number(res.data.num)
+        formData.value['state'] = res.data.state
+        formData.value['detail'] = res.data.detail
+        formData.value['score'] = res.data.score as number
+        formData.value['tags'] = res.data.tags
       })
 
       // 上传前验证
@@ -123,17 +138,6 @@ export default defineComponent({
           ElMessage('上传图片过大')
           return false
         }
-
-        //  const isJPG = file.type === 'image/jpeg';
-        // const isLt2M = file.size / 1024 / 1024 < 2;
-
-        // if (!isJPG) {
-        //   this.$message.error('上传头像图片只能是 JPG 格式!');
-        // }
-        // if (!isLt2M) {
-        //   this.$message.error('上传头像图片大小不能超过 2MB!');
-        // }
-        // return isJPG && isLt2M;
       }
 
       // 上传完成回调
@@ -149,7 +153,16 @@ export default defineComponent({
 
       // 提交
       const sumbit = () => {
-
+        (unref(addForm) as any).validate((valid: any) => {
+          if (valid) {
+            // 假装提交
+            setTimeout(() => {
+              ElMessage('修改成功')
+            }, 2000)
+          }else {
+            ElMessage('数据有误，请检查后提交')
+          }
+        })
       }
       // 取消
       const router = useRouter()
@@ -173,6 +186,11 @@ export default defineComponent({
 
 <style lang="less" scoped>
 
+.item-tag{
+  // width: 30px;
+  margin-left: 10px;
+}
+
 .footer-div{
   margin-top: 30px;
   width: 100%;
@@ -183,7 +201,6 @@ export default defineComponent({
     width: 100px;
     height: 30px;
   }
-
 }
 
 </style>
