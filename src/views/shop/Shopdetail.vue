@@ -18,10 +18,11 @@
         <el-tag class="item-tag" v-for="str in formData.tags" type="success" effect="dark" :key="str.index">{{ str }}</el-tag>
       </el-form-item>
       <el-form-item label="商品图片">
-        <el-upload list-type="picture" :drag="true" :limit="1" action="https://www.baidu.com" :on-error="uploadCallback" :before-upload="uploadCheck">
+        <!-- <el-upload list-type="picture" :drag="true" :limit="1" action="https://www.baidu.com" :on-error="uploadCallback" :before-upload="uploadCheck"> -->
+        <el-upload ref="upload" list-type="picture" :drag="true" :limit="1" action :on-error="uploadCallback" :before-upload="uploadCheck">
           <template #default>
-            <!-- <i class="el-icon-plus"></i> -->
-            <el-image :src="require('@/assets/img/picture1.png')" fit="fill"></el-image>
+            <!-- <el-image :src="require('@/assets/img/picture1.png')" fit="fill"></el-image> -->
+            <el-image :src="imgSrc" fit="fill"></el-image>
           </template>
           <template #tip>
             只能上传 jpg/png 文件，且不超过 1M
@@ -50,6 +51,7 @@
       <el-button class="footer-div-button" type="primary" @click="cancel">取消</el-button>
     </div>
 
+    <img-crop v-if="centerDialogVisible" :imgSrc="imgSrc" @closeCallback="closeCrop" @uploadCallback="cropFinishCallback"></img-crop>
   </div>
 </template>
 
@@ -59,6 +61,8 @@ import Editor from '@/components/Editor/index.vue'
 import { ElMessage } from 'element-plus'
 import { shopdetailApi } from './api'
 import { useRouter } from 'vue-router'
+import ImgCrop from '@/components/Cropper/index.vue'
+// import ImgCrop from '@/components/Cropper/ImgCrop.vue'
 
 export default defineComponent({
   name: 'Shopdetail',
@@ -66,7 +70,8 @@ export default defineComponent({
     id: String
   },
   components: {
-    Editor
+    Editor,
+    ImgCrop
   },
   setup(props, ctx) {
     const addForm = ref()
@@ -126,10 +131,11 @@ export default defineComponent({
       })
 
       // 上传前验证
+      const upload = ref()
       const uploadCheck = (file: any) => {
         // debugger
         // console.log(file)
-        if (file.type !== 'image/jpeg') {
+        if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
           ElMessage('请上传图片')
           return false
         }
@@ -138,6 +144,12 @@ export default defineComponent({
           ElMessage('上传图片过大')
           return false
         }
+      
+        const url = URL.createObjectURL(file)
+        imgSrc.value = url
+        centerDialogVisible.value = true
+
+        return false
       }
 
       // 上传完成回调
@@ -170,15 +182,34 @@ export default defineComponent({
         router.back()
       }
 
+      // 图片裁剪
+      const imgSrc = ref('')
+      const centerDialogVisible = ref(false)
+      const closeCrop = () => {
+        centerDialogVisible.value = false
+      }
+      const cropFinishCallback = (cropImg: any) => {
+        // 上传
+        centerDialogVisible.value = false
+        imgSrc.value = cropImg
+        console.log(upload.value)
+        upload.value.submit()
+      }
+
     return {
       addForm,
       formData,
       formRule,
+      upload,
       uploadCallback,
       uploadCheck,
       addEditText,
       sumbit,
-      cancel
+      cancel,
+      imgSrc,
+      centerDialogVisible,
+      closeCrop,
+      cropFinishCallback
     }
   }
 })

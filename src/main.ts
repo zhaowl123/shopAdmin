@@ -29,6 +29,8 @@ import '@/styles/reset.css' // 重置不同浏览器之间的标签默认样式
 
 import '@/styles/index.less'
 
+import VueCropper from 'vue-cropperjs'
+
 const app = createApp(App)
 
 setupRouter(app) // 引入路由
@@ -38,6 +40,8 @@ setupStore(app) // 引入状态管理
 setupElement(app) // 引入element组件
 
 setupGlobCom(app) // 注册全局公用组件
+
+app.use(VueCropper)
 
 router.isReady().then(() => {
   app.mount('#app')
